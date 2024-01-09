@@ -33,8 +33,8 @@ export type WeatherDataPointType = {
     pod: string;
   };
   dt_txt: string;
-}
+};
 
 export type WeatherByDateType = {
-  string: WeatherDataPointType[]
-}
+  [key: string]: WeatherDataPointType[];
+};

@@ -1,4 +1,4 @@
-@use "../abstract/index" as *;
+@use '../abstract/index' as *;
 
 .navbar {
   display: flex;
@@ -11,6 +11,13 @@
   &__organization {
     font-size: $text-lg;
     color: $clr-primary;
+  }
+
+  &__item {
+    font-size: $text-lg;
+    color: $clr-accent;
+    text-transform: uppercase;
+    letter-spacing: 1px;
   }
 
   &__link {

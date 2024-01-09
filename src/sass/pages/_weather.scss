@@ -1,0 +1,105 @@
+@use '../abstract/index' as *;
+
+.weather {
+  margin-block: 2rem;
+
+  &__heading {
+    color: $clr-primary;
+    font-size: $text-4xl;
+    text-transform: uppercase;
+    text-align: center;
+  }
+
+  &__container {
+    width: fit-content;
+    margin-inline: auto;
+  }
+
+  &__message {
+    text-align: center;
+    margin-block: 1rem;
+    color: $clr-error;
+  }
+
+  &__loading {
+    text-align: center;
+    margin-block: 1rem;
+    font-size: $text-lg;
+    color: transparent;
+
+    &--visible {
+      color: $clr-text-primary;
+    }
+  }
+
+  &__user-actions {
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+
+  &__button {
+    outline: 2px solid $clr-secondary;
+    background-color: transparent;
+    border-radius: $rounded-md;
+    border: none;
+    padding: 0.5rem 1rem;
+    text-transform: uppercase;
+    color: $clr-secondary;
+    font-weight: 600;
+    letter-spacing: 1px;
+    margin-block: 1rem;
+    cursor: pointer;
+  }
+
+  & .navigation {
+    padding: 0px;
+    margin: 0px;
+    list-style-type: none;
+    display: flex;
+    gap: 1rem;
+    flex-wrap: wrap;
+    margin-block: 1rem;
+
+    &__item {
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      background-color: $clr-secondary;
+      color: $clr-bg-primary;
+      padding: 0.5rem 1rem;
+      border-radius: $rounded-md;
+      cursor: pointer;
+      user-select: none;
+      transition: background-color 250ms ease-in;
+
+      &--active {
+        background-color: $clr-primary;
+      }
+    }
+  }
+
+  & .information {
+    &__temperatures {
+      padding: 0px;
+      margin: 0px;
+      list-style-type: none;
+      display: flex;
+      gap: 2rem;
+      flex-wrap: wrap;
+      margin-block: 2rem;
+      margin-inline: auto;
+    }
+
+    &__weather {
+      display: block;
+      margin-top: 1rem;
+      color: $clr-primary;
+    }
+
+    &__temperature-hour {
+      display: block;
+      margin-top: 1rem;
+      color: $clr-secondary;
+    }
+  }
+}

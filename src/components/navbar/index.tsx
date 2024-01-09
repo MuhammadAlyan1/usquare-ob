@@ -1,8 +1,8 @@
-import React, { useEffect } from "react";
-import { firebaseApp } from "../../firebase";
-import { getAuth, signOut } from "firebase/auth";
-import { useNavigate } from "react-router-dom";
-import { Link } from "react-router-dom";
+import React, { useEffect } from 'react';
+import { firebaseApp } from '../../firebase';
+import { getAuth, signOut } from 'firebase/auth';
+import { useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 
 const Navbar = () => {
   const auth = getAuth(firebaseApp);
@@ -12,17 +12,26 @@ const Navbar = () => {
   const handleSignOut = async (): Promise<void> => {
     try {
       await signOut(auth);
-      navigate("/signin");
+      navigate('/signin');
     } catch (error) {
-      console.log("There was in issue while signing out the user: ", error);
+      console.log('There was in issue while signing out the user: ', error);
     }
   };
 
   return (
     <nav className="navbar">
       <p className="navbar__organization">
-        <Link to="/" className="navbar__link">Usquare Solutions</Link>
+        <Link to="/" className="navbar__link">
+          Usquare Solutions
+        </Link>
       </p>
+      <div className="navbar__items">
+        <p className="navbar__item">
+          <Link to="/weather" className="navbar__link">
+            Weather
+          </Link>
+        </p>
+      </div>
       <div className="navbar__actions">
         {isSignedIn ? (
           <button
@@ -35,13 +44,13 @@ const Navbar = () => {
           <>
             <button
               className="navbar__button navbar__button--signup"
-              onClick={() => navigate("/signup")}
+              onClick={() => navigate('/signup')}
             >
               Sign up
             </button>
             <button
               className="navbar__button navbar__button--signin"
-              onClick={() => navigate("/signin")}
+              onClick={() => navigate('/signin')}
             >
               Sign in
             </button>
