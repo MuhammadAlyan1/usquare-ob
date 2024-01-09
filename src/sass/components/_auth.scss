@@ -1,0 +1,84 @@
+@use "././../abstract/index" as *;
+
+.signin,
+.signup {
+  min-height: 90vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.form {
+  flex: 1;
+  background-color: $clr-bg-secondary;
+  max-width: 500px;
+  padding: 1rem;
+  border-radius: $rounded-md;
+  margin-inline: auto;
+  margin-top: 2rem;
+  
+
+  &__heading {
+    text-align: center;
+    font-size: $text-3xl;
+    text-transform: uppercase;
+    margin-bottom: 1rem;
+    letter-spacing: 2px;
+  }
+
+  &__input-label-container {
+    margin-block: 1rem;
+  }
+
+  &__label {
+    display: block;
+    font-size: $text-base;
+    margin-bottom: 0.25rem;
+    color: $clr-text-primary;
+  }
+
+  &__input {
+    width: 100%;
+    background-color: transparent;
+    padding: 0.5rem 1rem;
+    border: none;
+    outline: 2px solid $clr-text-secondary;
+    border-radius: $rounded-lg;
+    color: $clr-text-primary;
+    font-size: $text-base;
+  }
+
+  &__submit-button {
+    width: 100%;
+    padding: 0.5rem 1rem;
+    font-size: $text-base;
+    border-radius: $rounded-lg;
+    border: none;
+    text-transform: uppercase;
+    font-weight: 500;
+    background-color: transparent;
+    outline: 2px solid $clr-text-secondary;
+    color: $clr-text-primary;
+    margin-top: 0.5rem;
+    cursor: pointer;
+
+    &--disabled {
+        color: $clr-bg-primary;
+        outline-color: $clr-bg-primary;
+    }
+  }
+
+
+  &__feedback {
+    text-align: center;
+    margin-top: 1rem;
+    color: $clr-error;
+  }
+
+  input:-webkit-autofill,
+  input:-webkit-autofill:hover, 
+  input:-webkit-autofill:focus, 
+  input:-webkit-autofill:active{
+      -webkit-box-shadow: 0 0 0 30px $clr-bg-secondary inset !important;
+  }
+}

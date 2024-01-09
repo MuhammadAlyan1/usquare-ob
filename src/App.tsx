@@ -1,25 +1,37 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React from "react";
+
+import { getAuth, onAuthStateChanged } from "firebase/auth";
+import { firebaseApp } from "./firebase";
+import { BrowserRouter, Routes, Route } from "react-router-dom";
+import Signin from "./components/auth/Signin";
+import Signup from "./components/auth/Signup";
+import Home from "./components/home";
+import SharedLayout from "./components/sharedLayout";
 
 function App() {
+  const auth = getAuth(firebaseApp);
+
+  onAuthStateChanged(auth, (user) => {
+    if (user) {
+      console.log("User is signed in: ", user.uid);
+    } else {
+      console.log("User is signed out");
+    }
+  });
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.tsx</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<SharedLayout />}>
+            <Route index element={<Home />} />
+            <Route path="signin" element={<Signin />} />
+            <Route path="signup" element={<Signup />} />
+          </Route>
+          <Route path="*" element={<h1>404</h1>} />
+        </Routes>
+      </BrowserRouter>
+    </>
   );
 }
 

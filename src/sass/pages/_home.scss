@@ -1,0 +1,24 @@
+
+@use "../abstract/index" as *;
+
+.home {
+  &__heading {
+    margin-block: 2rem;
+    font-size: $text-4xl;
+    color: $clr-primary;
+  }
+
+
+  &__greeting {
+    font-size: $text-lg;
+    color: $clr-text-primary;
+    margin-block: 1rem;
+  }
+  
+  &__loading {
+    text-align: center;
+    font-size: $text-lg;
+    margin-block: 1rem;
+  }
+
+}
