@@ -23,6 +23,10 @@ const Navbar = () => {
       <p className="navbar__organization">
         <Link to="/" className="navbar__link">Usquare Solutions</Link>
       </p>
+      <p className="navbar__organization">
+        <Link to="/maps" className="navbar__link">Maps</Link>
+      </p>
+
       <div className="navbar__actions">
         {isSignedIn ? (
           <button

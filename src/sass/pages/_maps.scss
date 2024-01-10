@@ -1,0 +1,18 @@
+@use "../abstract/index" as *;
+ 
+.maps {
+  
+  &__form {
+    margin-block: 1rem;
+  }
+  
+  & .form__submit-button {
+    margin-block: 0.5rem;
+  }
+
+  #map {
+    height: 600px;
+    border-radius: $rounded-md;
+  }
+
+}
