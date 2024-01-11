@@ -26,21 +26,17 @@
     -->
 
     <script
-      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCLruWTRDGUOPJV9MO4CAgKQ2w3lLiu0fg&libraries=places"
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCLruWTRDGUOPJV9MO4CAgKQ2w3lLiu0fg&libraries=places,geometry"
       async
       defer
     ></script>
-    <script
-      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyCLruWTRDGUOPJV9MO4CAgKQ2w3lLiu0fg&libraries=geometry"
-      async
-      defer
-    ></script>
+
     <title>React App</title>
   </head>
   <body>
     <noscript>You need to enable JavaScript to run this app.</noscript>
     <div id="root"></div>
-
+    <div id="map" style="height: 600px"></div>
     <!--
       This HTML file is a template.
       If you open it directly in the browser, you will see an empty page.
