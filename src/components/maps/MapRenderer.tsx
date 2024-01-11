@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import { fetchCoordinatesFromZipcode } from "../../utils/fetchCoordinatesFromZipcode";
 
 import { firebaseApp } from "../../firebase";
@@ -11,6 +11,7 @@ import {
   addDoc,
   getDoc,
 } from "firebase/firestore";
+import { authContext } from "../../App";
 
 const MapRenderer: React.FC<any> = ({
   map,
@@ -20,12 +21,12 @@ const MapRenderer: React.FC<any> = ({
   setEndZip,
 }) => {
   const [directions, setDirections] = useState(null);
-  const auth = getAuth(firebaseApp);
-  const userId = auth?.currentUser?.uid;
   const db = getFirestore(firebaseApp);
   const [sourceZipcode, setSourceZipCode] = useState(startZip);
   const [destinationZipcode, setDestinationZipcode] = useState(endZip);
   const [message, setMessage] = useState("");
+  const { state } = useContext(authContext);
+  const { userId } = state;
 
   useEffect(() => {
     const fetchSavedZipCodes = async () => {
@@ -51,7 +52,7 @@ const MapRenderer: React.FC<any> = ({
       }
     };
     fetchSavedZipCodes();
-  }, [userId]);
+  }, []);
 
   const findRoute = async (sourceZip: string, destinationZip: string) => {
     const startLocation = await fetchCoordinatesFromZipcode(sourceZip);
