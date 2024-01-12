@@ -12,6 +12,23 @@ import {
 } from 'firebase/firestore';
 import { getAuth } from 'firebase/auth';
 import { firebaseApp } from '../../firebase';
+import { convertUnixTimestampToTime } from '../../utils/convertUnixTimestampToTime';
+import sunsetImage from '../../assets/weather/sunset.png';
+import sunriseImage from '../../assets/weather/sunrise.png';
+
+type CityType = {
+  coords: {
+    lat: number;
+    lng: number;
+  };
+  name: string;
+  country: string;
+  id: number;
+  population: number;
+  sunrise: number;
+  sunset: number;
+  timezone: number;
+};
 
 const Weather = () => {
   const [weatherData, setWeatherData] = useState<WeatherByDateType[] | null>(
@@ -21,8 +38,14 @@ const Weather = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState('');
   const [selectedDate, setSelectedDate] = useState<string>('');
+  const [userPreferredUnit, setUserPreferredUnit] = useState('');
+  const [cityMetaData, setCityMetaData] = useState<CityType | null>(null);
   const DEFAULT_LATITUDE = 33.6560128;
   const DEFAULT_LONGTITUDE = 72.9710592;
+  const [coordinates, setCoordinates] = useState({
+    lat: DEFAULT_LATITUDE,
+    lng: DEFAULT_LONGTITUDE
+  });
   const db = getFirestore(firebaseApp);
   const auth = getAuth(firebaseApp);
   const userId = auth?.currentUser?.uid;
@@ -31,58 +54,61 @@ const Weather = () => {
     const fetchWeather = async () => {
       try {
         setIsLoading(true);
-        let latitude = DEFAULT_LATITUDE;
-        let longitude = DEFAULT_LONGTITUDE;
 
         if (navigator.geolocation) {
           navigator.geolocation.getCurrentPosition(
             (position) => {
-              latitude = position.coords.latitude;
-              longitude = position.coords.longitude;
+              setCoordinates({
+                lat: position.coords.latitude,
+                lng: position.coords.longitude
+              });
+
+              fetchData(position.coords.latitude, position.coords.longitude);
             },
             (error) => {
               console.error('Error getting user location:', error.message);
               setMessage(
-                'Please enable location to get location based weather data.'
+                'Please enable location to get location-based weather data.'
               );
+              setIsLoading(false);
             }
           );
         } else {
           console.error('Geolocation is not supported by this browser.');
+          fetchData(coordinates?.lat, coordinates.lng);
         }
-
-        const URL = `https://api.openweathermap.org/data/2.5/forecast?id=524901&units=${units}&lat=${latitude}&lon=${longitude}&appid=0d4cec26333efc0b4b16b99e0e60b21c`;
-
-        const response = await axios.get(URL);
-        const organizedData: any = {};
-
-        response?.data?.list?.forEach((item: WeatherDataPointType) => {
-          const date = item.dt_txt.split(' ')[0];
-
-          if (!organizedData[date]) {
-            organizedData[date] = [];
-          }
-
-          organizedData[date].push({
-            ...item
-          });
-        });
-
-        setWeatherData(organizedData);
-        !selectedDate && setSelectedDate(Object.keys(organizedData)[0]);
       } catch (error) {
-        console.log(
-          'There was in issue while fetching weather data: ',
-          weatherData
-        );
-        setMessage('Failed to retrive weather data.');
+        console.log('There was an issue while fetching weather data:', error);
+        setMessage('Failed to retrieve weather data.');
       } finally {
         setIsLoading(false);
       }
     };
 
+    const fetchData = async (latitude: number, longitude: number) => {
+      const URL = `https://api.openweathermap.org/data/2.5/forecast?id=524901&units=${units}&lat=${latitude}&lon=${longitude}&appid=0d4cec26333efc0b4b16b99e0e60b21c`;
+
+      const response = await axios.get(URL);
+      const organizedData: any = {};
+      setCityMetaData(response?.data?.city);
+      response?.data?.list?.forEach((item: WeatherDataPointType) => {
+        const date = item.dt_txt.split(' ')[0];
+
+        if (!organizedData[date]) {
+          organizedData[date] = [];
+        }
+
+        organizedData[date].push({
+          ...item
+        });
+      });
+
+      setWeatherData(organizedData);
+      !selectedDate && setSelectedDate(Object.keys(organizedData)[0]);
+    };
+
     fetchWeather();
-  }, [units]);
+  }, [units, coordinates?.lat, coordinates?.lng]);
 
   useEffect(() => {
     const fetchUserPrefences = async (): Promise<void> => {
@@ -98,6 +124,7 @@ const Weather = () => {
         if (userPreferencesSnapshot.exists()) {
           const userPreferenesData = userPreferencesSnapshot.data();
           userPreferenesData?.units && setUnits(userPreferenesData.units);
+          setUserPreferredUnit(units);
         }
       } catch (error: any) {
         console.log('error');
@@ -127,6 +154,7 @@ const Weather = () => {
         userId,
         units
       });
+      setUserPreferredUnit(units);
     } catch (error: any) {
       console.log('error');
       setMessage(error?.code);
@@ -149,6 +177,39 @@ const Weather = () => {
           </p>
         }
         {message && <p className="weather__message">{message}</p>}
+
+        {cityMetaData && (
+          <p className="weather__city">{`${cityMetaData?.name}, ${cityMetaData?.country} `}</p>
+        )}
+
+        {cityMetaData && (
+          <>
+            <div className="weather__day-duration">
+              <img
+                src={sunriseImage}
+                alt="sunrise"
+                className="weather__day-duration-icon"
+              />
+              <p className="weather__duration">
+                {cityMetaData &&
+                  convertUnixTimestampToTime(cityMetaData?.sunrise)}
+              </p>
+            </div>
+            <div className="weather__day-duration">
+              <img
+                src={sunsetImage}
+                alt="sunset"
+                className="weather__day-duration-icon"
+              />
+
+              <p className="weather__sunset">
+                {cityMetaData &&
+                  convertUnixTimestampToTime(cityMetaData?.sunset)}
+              </p>
+            </div>
+          </>
+        )}
+
         <div className="weather__user-actions">
           {units === 'metric' && (
             <button className="weather__button" onClick={handleChangeUnits}>
@@ -164,6 +225,11 @@ const Weather = () => {
             Save preferences
           </button>
         </div>
+        <p className="weather__user-preferences">
+          {userPreferredUnit
+            ? `Your units preferences are set as ${userPreferredUnit}`
+            : 'You do not have any preferences saved'}
+        </p>
         {
           <Navigation
             weatherData={weatherData}

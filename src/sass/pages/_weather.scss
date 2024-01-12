@@ -15,10 +15,31 @@
     margin-inline: auto;
   }
 
+  &__city {
+    margin-block: 1rem;
+    font-size: $text-4xl;
+  }
+
+  &__day-duration {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-block: 1rem;
+
+    &-icon {
+      width: 32px;
+    }
+  }
+
   &__message {
     text-align: center;
     margin-block: 1rem;
     color: $clr-error;
+  }
+
+  &__user-preferences {
+    font-size: $text-lg;
+    margin-bottom: 2rem;
   }
 
   &__loading {
@@ -96,10 +117,38 @@
       color: $clr-primary;
     }
 
+    &__weather-icon {
+      display: block;
+    }
+
     &__temperature-hour {
       display: block;
-      margin-top: 1rem;
       color: $clr-secondary;
+    }
+
+    &__detailed {
+      margin-block: 2rem;
+      display: flex;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 2rem;
+
+      &-current {
+        font-size: $text-6xl;
+        color: $clr-primary;
+        margin-bottom: 1rem;
+      }
+
+      &-image {
+        width: 100px;
+        display: block;
+      }
+
+      &-feels-like {
+        font-size: $text-lg;
+        color: $clr-text-primary;
+        margin-bottom: 1rem;
+      }
     }
   }
 }
