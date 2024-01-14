@@ -11,8 +11,10 @@ import {
   getDoc
 } from 'firebase/firestore';
 import { authContext } from '../../App';
+import axios from 'axios';
 
 const MapRenderer = () => {
+  const API_URL = 'http://localhost:5000/api';
   const db = getFirestore(firebaseApp);
   const [map, setMap] = useState<any | null>(null);
   const [startZip, setStartZip] = useState('51023');
@@ -29,14 +31,15 @@ const MapRenderer = () => {
       }
 
       try {
-        const userZipcodeRef = doc(db, 'maps', userId);
-        const zipCodeSnapshot = await getDoc(userZipcodeRef);
+        const response = await axios.get(`${API_URL}/map/${userId}`);
+        console.log('RESPONSE: ', response?.data);
 
-        if (zipCodeSnapshot.exists()) {
-          const zipCodesData = zipCodeSnapshot.data();
-          setStartZip(zipCodesData.startZip);
-          setEndZip(zipCodesData.endZip);
-          findRoute(zipCodesData.startZip, zipCodesData.endZip);
+        if (response?.data?.success) {
+          const { endZip, startZip } = response?.data?.data;
+
+          setStartZip(startZip);
+          setEndZip(endZip);
+          findRoute(startZip, endZip);
           return;
         }
       } catch (error) {
@@ -117,14 +120,19 @@ const MapRenderer = () => {
       return;
     }
 
-    const mapsCollection = collection(db, 'maps');
     try {
-      await setDoc(doc(mapsCollection, userId), {
+      const response = await axios.post(`${API_URL}/map/`, {
         userId,
-        startZip: startZip,
-        endZip: endZip
+        startZip,
+        endZip
       });
-      setMessage('');
+
+      console.log('RESPONSE: ', response?.data);
+
+      if (response?.data?.success) {
+        setMessage('');
+        return;
+      }
     } catch (error) {
       setMessage('Failed to save zip codes.');
       console.log('There was an error while trying to save zip codes', error);
