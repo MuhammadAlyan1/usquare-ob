@@ -1,14 +1,14 @@
-import React, { useEffect, useState } from "react";
-import { firebaseApp } from "../../firebase";
-import { getAuth } from "firebase/auth";
-import { useNavigate } from "react-router-dom";
-import { getFirestore, getDoc, collection, doc } from "firebase/firestore";
+import React, { useEffect, useState } from 'react';
+import { firebaseApp } from '../../firebase';
+import { getAuth } from 'firebase/auth';
+import { useNavigate } from 'react-router-dom';
+import { getFirestore, getDoc, collection, doc } from 'firebase/firestore';
 
 type UserType = {
-  fullName: string,
-  email: string,
-  userId: string,
-}
+  fullName: string;
+  email: string;
+  userId: string;
+};
 
 const Home = () => {
   const auth = getAuth(firebaseApp);
@@ -19,24 +19,24 @@ const Home = () => {
 
   useEffect(() => {
     if (!userId) {
-      navigate("/signin");
+      navigate('/signin');
       return;
     }
 
     const fetchUser = async (userId: string) => {
       try {
-        setIsLoading(true)
+        setIsLoading(true);
         const db = getFirestore();
-        const userRef = doc(db, "users", userId);
+        const userRef = doc(db, 'users', userId);
         const userSnapshot = await getDoc(userRef);
 
         if (userSnapshot.exists()) {
           setUserInfo(userSnapshot.data() as UserType);
         }
       } catch (error) {
-        console.log("There was an error while fetching user: ", error);
+        console.log('There was an error while fetching user: ', error);
       } finally {
-        setIsLoading(false)
+        setIsLoading(false);
       }
     };
 
@@ -46,12 +46,10 @@ const Home = () => {
   return (
     <div className="home">
       <h1 className="home__heading">Usquare Solutions</h1>
-      {
-        userInfo && <p className="home__greeting">Welcome back {userInfo?.fullName}</p> 
-      }
-      {
-        isLoading && <p className="home__loading">Loading..</p>
-      }
+      {userInfo && (
+        <p className="home__greeting">Welcome back {userInfo?.fullName}</p>
+      )}
+      {isLoading && <p className="home__loading">Loading..</p>}
     </div>
   );
 };

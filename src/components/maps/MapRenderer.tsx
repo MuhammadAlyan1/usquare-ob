@@ -1,68 +1,73 @@
-import React, { useEffect, useState, useContext } from "react";
-import { fetchCoordinatesFromZipcode } from "../../utils/fetchCoordinatesFromZipcode";
+import React, { useEffect, useState, useContext } from 'react';
+import { fetchCoordinatesFromZipcode } from '../../utils/fetchCoordinatesFromZipcode';
 
-import { firebaseApp } from "../../firebase";
-import { getAuth } from "firebase/auth";
+import { firebaseApp } from '../../firebase';
 import {
   collection,
   getFirestore,
   setDoc,
   doc,
   addDoc,
-  getDoc,
-} from "firebase/firestore";
-import { authContext } from "../../App";
+  getDoc
+} from 'firebase/firestore';
+import { authContext } from '../../App';
 
-const MapRenderer: React.FC<any> = ({
-  map,
-  startZip,
-  setStartZip,
-  endZip,
-  setEndZip,
-}) => {
-  const [directions, setDirections] = useState(null);
+const MapRenderer = () => {
   const db = getFirestore(firebaseApp);
-  const [sourceZipcode, setSourceZipCode] = useState(startZip);
-  const [destinationZipcode, setDestinationZipcode] = useState(endZip);
-  const [message, setMessage] = useState("");
+  const [map, setMap] = useState<any | null>(null);
+  const [startZip, setStartZip] = useState('51023');
+  const [endZip, setEndZip] = useState('51001');
+  const [message, setMessage] = useState('');
   const { state } = useContext(authContext);
   const { userId } = state;
 
   useEffect(() => {
     const fetchSavedZipCodes = async () => {
       if (!userId) {
-        console.log("Please log retrive saved zip codes");
+        console.log('Please log retrive saved zip codes');
         return;
       }
 
       try {
-        const userZipcodeRef = doc(db, "maps", userId);
+        const userZipcodeRef = doc(db, 'maps', userId);
         const zipCodeSnapshot = await getDoc(userZipcodeRef);
 
         if (zipCodeSnapshot.exists()) {
           const zipCodesData = zipCodeSnapshot.data();
           setStartZip(zipCodesData.startZip);
           setEndZip(zipCodesData.endZip);
-
-          console.log("SAVED ZIP CODES: ", zipCodesData);
+          findRoute(zipCodesData.startZip, zipCodesData.endZip);
           return;
         }
       } catch (error) {
-        console.log("There was an error while trying to save zipcodes", error);
+        console.log('There was an error while trying to save zipcodes', error);
       }
     };
     fetchSavedZipCodes();
-  }, []);
+  }, [userId]);
+
+  useEffect(() => {
+    const mapElement = document.getElementById('map') as HTMLElement;
+
+    // @ts-ignore
+    const newMap = new window.google.maps.Map(mapElement, {
+      center: { lat: 0, lng: 0 },
+      zoom: 12
+    });
+
+    setMap(newMap);
+    findRoute(startZip, endZip);
+  }, [startZip, endZip]);
 
   const findRoute = async (sourceZip: string, destinationZip: string) => {
     const startLocation = await fetchCoordinatesFromZipcode(sourceZip);
     const endLocation = await fetchCoordinatesFromZipcode(destinationZip);
-
     if (!startLocation || !endLocation) {
-      setMessage("Provided zip codes are invalid");
+      setMessage('Provided zip codes are invalid');
       return;
     }
 
+    // @ts-ignore
     const directionsService = new window.google.maps.DirectionsService();
 
     try {
@@ -70,23 +75,25 @@ const MapRenderer: React.FC<any> = ({
         {
           origin: {
             lat: startLocation?.latitude,
-            lng: startLocation?.longitude,
+            lng: startLocation?.longitude
           },
           destination: {
             lat: endLocation?.latitude,
-            lng: endLocation?.longitude,
+            lng: endLocation?.longitude
           },
-          travelMode: google.maps.TravelMode.DRIVING,
+          // @ts-ignore
+          travelMode: google.maps.TravelMode.DRIVING
         },
         (result: any, status: string) => {
-          if (status === "OK") {
+          if (status === 'OK') {
+            // @ts-ignore
             const directionsDisplay = new window.google.maps.DirectionsRenderer(
               {
-                map,
+                map
               }
             );
             directionsDisplay.setDirections(result);
-            map?.addListener("click", (e: any) => {
+            map?.addListener('click', (e: any) => {
               handleMapClick(e.latLng, result);
             });
           } else {
@@ -95,52 +102,55 @@ const MapRenderer: React.FC<any> = ({
         }
       );
     } catch (error) {
-      console.log("Failed to fetch route", error);
+      console.log('Failed to fetch route', error);
     }
   };
 
   const saveZipCodesInDb = async () => {
     if (!userId) {
-      setMessage("Please log in to save zip codes");
+      setMessage('Please log in to save zip codes');
       return;
     }
 
-    if (!sourceZipcode || !destinationZipcode) {
-      setMessage("Please enter both zip codes");
+    if (!startZip || !endZip) {
+      setMessage('Please enter both zip codes');
       return;
     }
 
-    const mapsCollection = collection(db, "maps");
+    const mapsCollection = collection(db, 'maps');
     try {
       await setDoc(doc(mapsCollection, userId), {
         userId,
-        startZip: sourceZipcode,
-        endZip: destinationZipcode,
+        startZip: startZip,
+        endZip: endZip
       });
-      setMessage("");
+      setMessage('');
     } catch (error) {
-      setMessage("Failed to save zip codes.");
-      console.log("There was an error while trying to save zip codes", error);
+      setMessage('Failed to save zip codes.');
+      console.log('There was an error while trying to save zip codes', error);
     }
   };
 
   const handleMapClick = (clickedPoint: any, routeResult: any) => {
     const startPoint = {
       lat: clickedPoint.lat(),
-      lng: clickedPoint.lng(),
+      lng: clickedPoint.lng()
     };
 
+    // @ts-ignore
     const decodedPath = google.maps.geometry.encoding.decodePath(
       routeResult?.routes?.[0].overview_polyline
     );
 
     let nearestPoint = decodedPath[0];
+    // @ts-ignore
     let minDistance = google.maps.geometry.spherical.computeDistanceBetween(
       startPoint,
       nearestPoint
     );
 
     for (const coord of decodedPath) {
+      // @ts-ignore
       const distance = google.maps.geometry.spherical.computeDistanceBetween(
         startPoint,
         coord
@@ -151,44 +161,39 @@ const MapRenderer: React.FC<any> = ({
         nearestPoint = coord;
       }
     }
-
+    // @ts-ignore
     const directionsService = new google.maps.DirectionsService();
 
     const request = {
       origin: startPoint,
       destination: nearestPoint,
-      travelMode: google.maps.TravelMode.DRIVING,
+      // @ts-ignore
+      travelMode: google.maps.TravelMode.DRIVING
     };
-
+    // @ts-ignore
     directionsService.route(request, (result, status) => {
+      // @ts-ignore
       if (status === google.maps.DirectionsStatus.OK) {
         const shortestPath = result?.routes[0].overview_path;
-
+        // @ts-ignore
         const directionsDisplay = new window.google.maps.DirectionsRenderer({
-          map,
+          map
         });
         directionsDisplay.setDirections(result);
       } else {
-        console.error("Error fetching directions:", status);
+        console.error('Error fetching directions:', status);
       }
     });
   };
 
-  useEffect(() => {
-    findRoute(startZip, endZip);
-    setSourceZipCode(sourceZipcode);
-  }, [startZip, endZip]);
-
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    if (sourceZipcode.length !== 5 || destinationZipcode.length !== 5) {
-      setMessage("Please enter valid zip codes.");
+    if (startZip.length !== 5 || endZip.length !== 5) {
+      setMessage('Please enter valid zip codes.');
       return;
     }
 
-    setStartZip(sourceZipcode);
-    setEndZip(destinationZipcode);
-    setMessage("");
+    findRoute(startZip, endZip);
   };
 
   return (
@@ -202,8 +207,8 @@ const MapRenderer: React.FC<any> = ({
             className="form__input"
             type="text"
             id="startZip"
-            value={sourceZipcode}
-            onChange={(e) => setSourceZipCode(e.target.value)}
+            value={startZip}
+            onChange={(e) => setStartZip(e.target.value)}
           />
         </div>
         <div className="form__input-label-container">
@@ -214,8 +219,8 @@ const MapRenderer: React.FC<any> = ({
             className="form__input"
             type="text"
             id="endZip"
-            value={destinationZipcode}
-            onChange={(e) => setDestinationZipcode(e.target.value)}
+            value={endZip}
+            onChange={(e) => setEndZip(e.target.value)}
           />
         </div>
         <button type="submit" className="form__submit-button">
@@ -230,7 +235,7 @@ const MapRenderer: React.FC<any> = ({
         </button>
         <p
           className={`form__feedback ${
-            message ? "form__feedback--visible" : ""
+            message ? 'form__feedback--visible' : ''
           }`}
         >
           {message}
