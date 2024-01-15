@@ -1,20 +1,21 @@
-import React, { useEffect, useState } from 'react';
-import axios from 'axios';
-import { WeatherByDateType, WeatherDataPointType } from '../../types/weather';
-import Navigation from './Navigation';
-import WeatherInformation from './WeatherInformation';
+import React, { useEffect, useState, useContext } from "react";
+import axios from "axios";
+import { WeatherByDateType, WeatherDataPointType } from "../../types/weather";
+import Navigation from "./Navigation";
+import WeatherInformation from "./WeatherInformation";
 import {
   getFirestore,
   setDoc,
   getDoc,
   collection,
-  doc
-} from 'firebase/firestore';
-import { getAuth } from 'firebase/auth';
-import { firebaseApp } from '../../firebase';
-import { convertUnixTimestampToTime } from '../../utils/convertUnixTimestampToTime';
-import sunsetImage from '../../assets/weather/sunset.png';
-import sunriseImage from '../../assets/weather/sunrise.png';
+  doc,
+} from "firebase/firestore";
+import { getAuth } from "firebase/auth";
+import { firebaseApp } from "../../firebase";
+import { convertUnixTimestampToTime } from "../../utils/convertUnixTimestampToTime";
+import sunsetImage from "../../assets/weather/sunset.png";
+import sunriseImage from "../../assets/weather/sunrise.png";
+import { authContext } from "../../App";
 
 type CityType = {
   coords: {
@@ -34,22 +35,21 @@ const Weather = () => {
   const [weatherData, setWeatherData] = useState<WeatherByDateType[] | null>(
     null
   );
-  const [units, setUnits] = useState('metric');
+  const [units, setUnits] = useState("metric");
   const [isLoading, setIsLoading] = useState(false);
-  const [message, setMessage] = useState('');
-  const [selectedDate, setSelectedDate] = useState<string>('');
-  const [userPreferredUnit, setUserPreferredUnit] = useState('');
+  const [message, setMessage] = useState("");
+  const [selectedDate, setSelectedDate] = useState<string>("");
+  const [userPreferredUnit, setUserPreferredUnit] = useState("");
   const [cityMetaData, setCityMetaData] = useState<CityType | null>(null);
   const DEFAULT_LATITUDE = 33.6560128;
   const DEFAULT_LONGTITUDE = 72.9710592;
   const [coordinates, setCoordinates] = useState({
     lat: DEFAULT_LATITUDE,
-    lng: DEFAULT_LONGTITUDE
+    lng: DEFAULT_LONGTITUDE,
   });
   const db = getFirestore(firebaseApp);
-  const auth = getAuth(firebaseApp);
-  const userId = auth?.currentUser?.uid;
-
+  const auth = useContext(authContext);
+  const userId = auth?.state?.userId;
   useEffect(() => {
     const fetchWeather = async () => {
       try {
@@ -60,26 +60,26 @@ const Weather = () => {
             (position) => {
               setCoordinates({
                 lat: position.coords.latitude,
-                lng: position.coords.longitude
+                lng: position.coords.longitude,
               });
 
               fetchData(position.coords.latitude, position.coords.longitude);
             },
             (error) => {
-              console.error('Error getting user location:', error.message);
+              console.error("Error getting user location:", error.message);
               setMessage(
-                'Please enable location to get location-based weather data.'
+                "Please enable location to get location-based weather data."
               );
               setIsLoading(false);
             }
           );
         } else {
-          console.error('Geolocation is not supported by this browser.');
+          console.error("Geolocation is not supported by this browser.");
           fetchData(coordinates?.lat, coordinates.lng);
         }
       } catch (error) {
-        console.log('There was an issue while fetching weather data:', error);
-        setMessage('Failed to retrieve weather data.');
+        console.log("There was an issue while fetching weather data:", error);
+        setMessage("Failed to retrieve weather data.");
       } finally {
         setIsLoading(false);
       }
@@ -92,14 +92,14 @@ const Weather = () => {
       const organizedData: any = {};
       setCityMetaData(response?.data?.city);
       response?.data?.list?.forEach((item: WeatherDataPointType) => {
-        const date = item.dt_txt.split(' ')[0];
+        const date = item.dt_txt.split(" ")[0];
 
         if (!organizedData[date]) {
           organizedData[date] = [];
         }
 
         organizedData[date].push({
-          ...item
+          ...item,
         });
       });
 
@@ -108,7 +108,7 @@ const Weather = () => {
     };
 
     fetchWeather();
-  }, [units, coordinates?.lat, coordinates?.lng]);
+  }, [units, userPreferredUnit, coordinates?.lat, coordinates?.lng]);
 
   useEffect(() => {
     const fetchUserPrefences = async (): Promise<void> => {
@@ -118,16 +118,17 @@ const Weather = () => {
 
       try {
         setIsLoading(true);
-        const userPreferencesRef = doc(db, 'preferences', userId);
+        const userPreferencesRef = doc(db, "preferences", userId);
         const userPreferencesSnapshot = await getDoc(userPreferencesRef);
 
         if (userPreferencesSnapshot.exists()) {
           const userPreferenesData = userPreferencesSnapshot.data();
           userPreferenesData?.units && setUnits(userPreferenesData.units);
-          setUserPreferredUnit(units);
+          userPreferenesData?.units &&
+            setUserPreferredUnit(userPreferenesData.units);
         }
       } catch (error: any) {
-        console.log('error');
+        console.log("error");
         setMessage(error?.code);
       } finally {
         setIsLoading(false);
@@ -138,25 +139,25 @@ const Weather = () => {
   }, [userId]);
 
   const handleChangeUnits = () => {
-    setUnits((prev) => (prev === 'metric' ? 'imperial' : 'metric'));
+    setUnits((prev) => (prev === "metric" ? "imperial" : "metric"));
   };
 
   const setUserPrefences = async (): Promise<void> => {
     if (!userId) {
-      setMessage('Please sign in to set preferences.');
+      setMessage("Please sign in to set preferences.");
       return;
     }
 
     try {
       setIsLoading(true);
-      const preferencesCollection = collection(db, 'preferences');
+      const preferencesCollection = collection(db, "preferences");
       await setDoc(doc(preferencesCollection, userId), {
         userId,
-        units
+        units,
       });
       setUserPreferredUnit(units);
     } catch (error: any) {
-      console.log('error');
+      console.log("error");
       setMessage(error?.code);
     } finally {
       setIsLoading(false);
@@ -170,7 +171,7 @@ const Weather = () => {
         {
           <p
             className={`weather__loading ${
-              isLoading ? 'weather__loading--visible' : ''
+              isLoading ? "weather__loading--visible" : ""
             }`}
           >
             Loading..
@@ -211,12 +212,12 @@ const Weather = () => {
         )}
 
         <div className="weather__user-actions">
-          {units === 'metric' && (
+          {units === "metric" && (
             <button className="weather__button" onClick={handleChangeUnits}>
               Change to Fahrenheit
             </button>
           )}
-          {units === 'imperial' && (
+          {units === "imperial" && (
             <button className="weather__button" onClick={handleChangeUnits}>
               Change to Celsius
             </button>
@@ -228,7 +229,7 @@ const Weather = () => {
         <p className="weather__user-preferences">
           {userPreferredUnit
             ? `Your units preferences are set as ${userPreferredUnit}`
-            : 'You do not have any preferences saved'}
+            : "You do not have any preferences saved"}
         </p>
         {
           <Navigation

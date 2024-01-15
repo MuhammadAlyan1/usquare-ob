@@ -1,6 +1,6 @@
-import React from 'react';
-import { WeatherByDateType } from '../../types/weather';
-import { convertHoursTo12HourFormat } from '../../utils/convertHoursTo12HourFormat';
+import React from "react";
+import { WeatherByDateType } from "../../types/weather";
+import { convertHoursTo12HourFormat } from "../../utils/convertHoursTo12HourFormat";
 
 type WeatherInformationPropsType = {
   weatherData: WeatherByDateType[] | null;
@@ -11,7 +11,7 @@ type WeatherInformationPropsType = {
 const WeatherInformation: React.FC<WeatherInformationPropsType> = ({
   weatherData,
   selectedDate,
-  units
+  units,
 }) => {
   // @ts-ignore
 
@@ -21,11 +21,11 @@ const WeatherInformation: React.FC<WeatherInformationPropsType> = ({
       <div className="information__detailed">
         <div className="information__detailed-contents">
           <p className="information__detailed-current">{`${data.main.temp} ${
-            units === 'metric' ? '°C' : '°F'
+            units === "metric" ? "°C" : "°F"
           }`}</p>
           <p className="information__detailed-feels-like">{`Feels like ${
             data.main.feels_like
-          } ${units === 'metric' ? '°C' : '°F'}`}</p>
+          } ${units === "metric" ? "°C" : "°F"}`}</p>
         </div>
         <div className="information__detailed-image-container">
           <img
@@ -38,9 +38,6 @@ const WeatherInformation: React.FC<WeatherInformationPropsType> = ({
     );
   };
 
-  // @ts-ignore
-  console.log(weatherData && weatherData[selectedDate][0]);
-
   return (
     <div className="information">
       {/* @ts-ignore */}
@@ -50,12 +47,12 @@ const WeatherInformation: React.FC<WeatherInformationPropsType> = ({
           // @ts-ignore
           weatherData[selectedDate].map((data: WeatherDataPointType, index) => (
             <li key={data.dt_txt} className="information__temperature">
-              {` ${data.main.temp} ${units === 'metric' ? '°C' : '°F'}`}
+              {` ${data.main.temp} ${units === "metric" ? "°C" : "°F"}`}
 
               <span className="information__weather">
                 {
                   // @ts-ignore
-                  data.weather[0]['main']
+                  data.weather[0]["main"]
                 }
               </span>
               <img
@@ -64,7 +61,7 @@ const WeatherInformation: React.FC<WeatherInformationPropsType> = ({
                 className="information__weather-icon"
               />
               <span className="information__temperature-hour">
-                {convertHoursTo12HourFormat(data.dt_txt.split(' ')[1])}
+                {convertHoursTo12HourFormat(data.dt_txt.split(" ")[1])}
               </span>
             </li>
           ))}
