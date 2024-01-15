@@ -1,8 +1,9 @@
-import React, { useState } from "react";
+import React, { useState, useContext, useEffect } from "react";
 import { firebaseApp } from "../../firebase";
 import { isEmailValid } from "../../utils/isEmailValid";
 import { getAuth, signInWithEmailAndPassword } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
+import { authContext } from "../../App";
 
 const Signin = () => {
   const [email, setEmail] = useState("");
@@ -10,7 +11,15 @@ const Signin = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [message, setMessage] = useState("");
   const auth = getAuth(firebaseApp);
+  const { state } = useContext(authContext);
+  const { userId } = state;
   const navigate = useNavigate();
+
+  useEffect(() => {
+    if (userId) {
+      navigate("/");
+    }
+  }, [userId]);
 
   const handleSubmit = async (
     e: React.FormEvent<HTMLFormElement>

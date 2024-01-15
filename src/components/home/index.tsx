@@ -1,21 +1,24 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useContext } from "react";
 import { firebaseApp } from "../../firebase";
 import { getAuth } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 import { getFirestore, getDoc, collection, doc } from "firebase/firestore";
+import { authContext } from "../../App";
 
 type UserType = {
-  fullName: string,
-  email: string,
-  userId: string,
-}
+  fullName: string;
+  email: string;
+  userId: string;
+};
 
 const Home = () => {
   const auth = getAuth(firebaseApp);
   const navigate = useNavigate();
   const [userInfo, setUserInfo] = useState<UserType | null>();
   const [isLoading, setIsLoading] = useState(false);
-  const userId = auth?.currentUser?.uid;
+  // const userId = auth?.currentUser?.uid;
+  const { state } = useContext(authContext);
+  const { userId } = state;
 
   useEffect(() => {
     if (!userId) {
@@ -25,7 +28,7 @@ const Home = () => {
 
     const fetchUser = async (userId: string) => {
       try {
-        setIsLoading(true)
+        setIsLoading(true);
         const db = getFirestore();
         const userRef = doc(db, "users", userId);
         const userSnapshot = await getDoc(userRef);
@@ -36,7 +39,7 @@ const Home = () => {
       } catch (error) {
         console.log("There was an error while fetching user: ", error);
       } finally {
-        setIsLoading(false)
+        setIsLoading(false);
       }
     };
 
@@ -46,12 +49,10 @@ const Home = () => {
   return (
     <div className="home">
       <h1 className="home__heading">Usquare Solutions</h1>
-      {
-        userInfo && <p className="home__greeting">Welcome back {userInfo?.fullName}</p> 
-      }
-      {
-        isLoading && <p className="home__loading">Loading..</p>
-      }
+      {userInfo && (
+        <p className="home__greeting">Welcome back {userInfo?.fullName}</p>
+      )}
+      {isLoading && <p className="home__loading">Loading..</p>}
     </div>
   );
 };
