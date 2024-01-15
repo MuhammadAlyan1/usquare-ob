@@ -1,38 +1,38 @@
-import React, { useEffect, useState, useContext } from 'react';
-import { fetchCoordinatesFromZipcode } from '../../utils/fetchCoordinatesFromZipcode';
+import React, { useEffect, useState, useContext, useRef } from "react";
+import { fetchCoordinatesFromZipcode } from "../../utils/fetchCoordinatesFromZipcode";
 
-import { firebaseApp } from '../../firebase';
+import { firebaseApp } from "../../firebase";
 import {
   collection,
   getFirestore,
   setDoc,
   doc,
   addDoc,
-  getDoc
-} from 'firebase/firestore';
-import { authContext } from '../../App';
-import axios from 'axios';
+  getDoc,
+} from "firebase/firestore";
+import { authContext } from "../../App";
+import axios from "axios";
 
 const MapRenderer = () => {
-  const API_URL = 'http://localhost:5000/api';
+  const API_URL = "http://localhost:5000/api";
   const db = getFirestore(firebaseApp);
   const [map, setMap] = useState<any | null>(null);
-  const [startZip, setStartZip] = useState('51023');
-  const [endZip, setEndZip] = useState('51001');
-  const [message, setMessage] = useState('');
+  const [startZip, setStartZip] = useState("51023");
+  const [endZip, setEndZip] = useState("51001");
+  const [message, setMessage] = useState("");
   const { state } = useContext(authContext);
   const { userId } = state;
 
   useEffect(() => {
     const fetchSavedZipCodes = async () => {
       if (!userId) {
-        console.log('Please log retrive saved zip codes');
+        console.log("Please log retrive saved zip codes");
         return;
       }
 
       try {
         const response = await axios.get(`${API_URL}/map/${userId}`);
-        console.log('RESPONSE: ', response?.data);
+        console.log("RESPONSE: ", response?.data);
 
         if (response?.data?.success) {
           const { endZip, startZip } = response?.data?.data;
@@ -43,19 +43,18 @@ const MapRenderer = () => {
           return;
         }
       } catch (error) {
-        console.log('There was an error while trying to save zipcodes', error);
+        console.log("There was an error while trying to save zipcodes", error);
       }
     };
     fetchSavedZipCodes();
   }, [userId]);
 
   useEffect(() => {
-    const mapElement = document.getElementById('map') as HTMLElement;
+    const mapElement = document.getElementById("map") as HTMLElement;
 
-    // @ts-ignore
     const newMap = new window.google.maps.Map(mapElement, {
       center: { lat: 0, lng: 0 },
-      zoom: 12
+      zoom: 12,
     });
 
     setMap(newMap);
@@ -66,7 +65,7 @@ const MapRenderer = () => {
     const startLocation = await fetchCoordinatesFromZipcode(sourceZip);
     const endLocation = await fetchCoordinatesFromZipcode(destinationZip);
     if (!startLocation || !endLocation) {
-      setMessage('Provided zip codes are invalid');
+      setMessage("Provided zip codes are invalid");
       return;
     }
 
@@ -78,25 +77,25 @@ const MapRenderer = () => {
         {
           origin: {
             lat: startLocation?.latitude,
-            lng: startLocation?.longitude
+            lng: startLocation?.longitude,
           },
           destination: {
             lat: endLocation?.latitude,
-            lng: endLocation?.longitude
+            lng: endLocation?.longitude,
           },
           // @ts-ignore
-          travelMode: google.maps.TravelMode.DRIVING
+          travelMode: google.maps.TravelMode.DRIVING,
         },
         (result: any, status: string) => {
-          if (status === 'OK') {
+          if (status === "OK") {
             // @ts-ignore
             const directionsDisplay = new window.google.maps.DirectionsRenderer(
               {
-                map
+                map,
               }
             );
             directionsDisplay.setDirections(result);
-            map?.addListener('click', (e: any) => {
+            map?.addListener("click", (e: any) => {
               handleMapClick(e.latLng, result);
             });
           } else {
@@ -105,18 +104,18 @@ const MapRenderer = () => {
         }
       );
     } catch (error) {
-      console.log('Failed to fetch route', error);
+      console.log("Failed to fetch route", error);
     }
   };
 
   const saveZipCodesInDb = async () => {
     if (!userId) {
-      setMessage('Please log in to save zip codes');
+      setMessage("Please log in to save zip codes");
       return;
     }
 
     if (!startZip || !endZip) {
-      setMessage('Please enter both zip codes');
+      setMessage("Please enter both zip codes");
       return;
     }
 
@@ -124,25 +123,25 @@ const MapRenderer = () => {
       const response = await axios.post(`${API_URL}/map/`, {
         userId,
         startZip,
-        endZip
+        endZip,
       });
 
-      console.log('RESPONSE: ', response?.data);
+      console.log("RESPONSE: ", response?.data);
 
       if (response?.data?.success) {
-        setMessage('');
+        setMessage("");
         return;
       }
     } catch (error) {
-      setMessage('Failed to save zip codes.');
-      console.log('There was an error while trying to save zip codes', error);
+      setMessage("Failed to save zip codes.");
+      console.log("There was an error while trying to save zip codes", error);
     }
   };
 
   const handleMapClick = (clickedPoint: any, routeResult: any) => {
     const startPoint = {
       lat: clickedPoint.lat(),
-      lng: clickedPoint.lng()
+      lng: clickedPoint.lng(),
     };
 
     // @ts-ignore
@@ -176,7 +175,7 @@ const MapRenderer = () => {
       origin: startPoint,
       destination: nearestPoint,
       // @ts-ignore
-      travelMode: google.maps.TravelMode.DRIVING
+      travelMode: google.maps.TravelMode.DRIVING,
     };
     // @ts-ignore
     directionsService.route(request, (result, status) => {
@@ -185,11 +184,11 @@ const MapRenderer = () => {
         const shortestPath = result?.routes[0].overview_path;
         // @ts-ignore
         const directionsDisplay = new window.google.maps.DirectionsRenderer({
-          map
+          map,
         });
         directionsDisplay.setDirections(result);
       } else {
-        console.error('Error fetching directions:', status);
+        console.error("Error fetching directions:", status);
       }
     });
   };
@@ -197,7 +196,7 @@ const MapRenderer = () => {
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     if (startZip.length !== 5 || endZip.length !== 5) {
-      setMessage('Please enter valid zip codes.');
+      setMessage("Please enter valid zip codes.");
       return;
     }
 
@@ -243,7 +242,7 @@ const MapRenderer = () => {
         </button>
         <p
           className={`form__feedback ${
-            message ? 'form__feedback--visible' : ''
+            message ? "form__feedback--visible" : ""
           }`}
         >
           {message}
