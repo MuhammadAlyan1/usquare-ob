@@ -1,14 +1,14 @@
 import React, { useEffect, useState } from "react";
 import { firebaseApp } from "../../firebase";
 import { getAuth } from "firebase/auth";
-import { useNavigate } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { getFirestore, getDoc, collection, doc } from "firebase/firestore";
 
 type UserType = {
-  fullName: string,
-  email: string,
-  userId: string,
-}
+  fullName: string;
+  email: string;
+  userId: string;
+};
 
 const Home = () => {
   const auth = getAuth(firebaseApp);
@@ -25,7 +25,7 @@ const Home = () => {
 
     const fetchUser = async (userId: string) => {
       try {
-        setIsLoading(true)
+        setIsLoading(true);
         const db = getFirestore();
         const userRef = doc(db, "users", userId);
         const userSnapshot = await getDoc(userRef);
@@ -36,7 +36,7 @@ const Home = () => {
       } catch (error) {
         console.log("There was an error while fetching user: ", error);
       } finally {
-        setIsLoading(false)
+        setIsLoading(false);
       }
     };
 
@@ -46,12 +46,13 @@ const Home = () => {
   return (
     <div className="home">
       <h1 className="home__heading">Usquare Solutions</h1>
-      {
-        userInfo && <p className="home__greeting">Welcome back {userInfo?.fullName}</p> 
-      }
-      {
-        isLoading && <p className="home__loading">Loading..</p>
-      }
+      {userInfo && (
+        <p className="home__greeting">Welcome back {userInfo?.fullName}</p>
+      )}
+      <Link to="/weather" className="home__link">
+        Check Weather
+      </Link>
+      {isLoading && <p className="home__loading">Loading..</p>}
     </div>
   );
 };

@@ -15,6 +15,10 @@
     margin-inline: auto;
   }
 
+  &__city-input-container {
+    margin-top: 2rem;
+  }
+
   &__city {
     margin-block: 1rem;
     font-size: $text-4xl;
@@ -71,6 +75,10 @@
     letter-spacing: 1px;
     margin-block: 1rem;
     cursor: pointer;
+
+    &:hover {
+      box-shadow: 2px 2px 10px $clr-secondary;
+    }
   }
 
   & .navigation {

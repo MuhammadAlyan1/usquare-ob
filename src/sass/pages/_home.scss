@@ -1,4 +1,3 @@
-
 @use "../abstract/index" as *;
 
 .home {
@@ -8,17 +7,36 @@
     color: $clr-primary;
   }
 
-
   &__greeting {
     font-size: $text-lg;
     color: $clr-text-primary;
     margin-block: 1rem;
   }
-  
+
+  &__link {
+    color: $clr-secondary;
+    display: block;
+    text-decoration: none;
+    padding: 0.5rem 1rem;
+    outline: 2px solid $clr-secondary;
+    width: fit-content;
+    border-radius: $rounded-md;
+    text-transform: uppercase;
+    background-color: transparent;
+    transition-property: color, background-color;
+    transition-duration: 250ms;
+    transition-timing-function: ease-in;
+
+    &:hover {
+      cursor: pointer;
+      background-color: $clr-secondary;
+      color: $clr-bg-primary;
+    }
+  }
+
   &__loading {
     text-align: center;
     font-size: $text-lg;
     margin-block: 1rem;
   }
-
 }

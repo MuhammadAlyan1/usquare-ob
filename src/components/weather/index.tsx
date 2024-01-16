@@ -47,6 +47,7 @@ const Weather = () => {
     lat: DEFAULT_LATITUDE,
     lng: DEFAULT_LONGTITUDE,
   });
+  const [city, setCity] = useState("");
   const db = getFirestore(firebaseApp);
   const auth = useContext(authContext);
   const userId = auth?.state?.userId;
@@ -86,25 +87,34 @@ const Weather = () => {
     };
 
     const fetchData = async (latitude: number, longitude: number) => {
-      const URL = `https://api.openweathermap.org/data/2.5/forecast?id=524901&units=${units}&lat=${latitude}&lon=${longitude}&appid=0d4cec26333efc0b4b16b99e0e60b21c`;
-
-      const response = await axios.get(URL);
-      const organizedData: any = {};
-      setCityMetaData(response?.data?.city);
-      response?.data?.list?.forEach((item: WeatherDataPointType) => {
-        const date = item.dt_txt.split(" ")[0];
-
-        if (!organizedData[date]) {
-          organizedData[date] = [];
+      try {
+        let url = `https://api.openweathermap.org/data/2.5/forecast?id=524901&units=${units}&lat=${latitude}&lon=${longitude}&appid=${process.env.REACT_APP_OPEN_WEATHER_API_KEY}`;
+        if (city) {
+          url = `https://api.openweathermap.org/data/2.5/forecast?id=524901&units=${units}&q=${city}&appid=${process.env.REACT_APP_OPEN_WEATHER_API_KEY}`;
         }
+        const response = await axios.get(url);
+        const organizedData: any = {};
+        setCityMetaData(response?.data?.city);
+        response?.data?.list?.forEach((item: WeatherDataPointType) => {
+          const date = item.dt_txt.split(" ")[0];
 
-        organizedData[date].push({
-          ...item,
+          if (!organizedData[date]) {
+            organizedData[date] = [];
+          }
+
+          organizedData[date].push({
+            ...item,
+          });
         });
-      });
 
-      setWeatherData(organizedData);
-      !selectedDate && setSelectedDate(Object.keys(organizedData)[0]);
+        setWeatherData(organizedData);
+        !selectedDate && setSelectedDate(Object.keys(organizedData)[0]);
+      } catch (error: any) {
+        console.log(error);
+        setMessage(
+          error?.response?.data?.message || "Failed to retrieve weather data"
+        );
+      }
     };
 
     fetchWeather();
@@ -123,6 +133,8 @@ const Weather = () => {
 
         if (userPreferencesSnapshot.exists()) {
           const userPreferenesData = userPreferencesSnapshot.data();
+          console.log("USER PREFERENCES: ", userPreferenesData);
+          userPreferenesData?.city && setCity(userPreferenesData.city);
           userPreferenesData?.units && setUnits(userPreferenesData.units);
           userPreferenesData?.units &&
             setUserPreferredUnit(userPreferenesData.units);
@@ -154,11 +166,50 @@ const Weather = () => {
       await setDoc(doc(preferencesCollection, userId), {
         userId,
         units,
+        city,
       });
       setUserPreferredUnit(units);
     } catch (error: any) {
       console.log("error");
       setMessage(error?.code);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleFetchCityWeather = async () => {
+    if (!city) {
+      setMessage("Please enter a city.");
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      const URL = `https://api.openweathermap.org/data/2.5/forecast?id=524901&units=${units}&q=${city}&appid=${process.env.REACT_APP_OPEN_WEATHER_API_KEY}`;
+      const response = await axios.get(URL);
+      const organizedData: any = {};
+      setCityMetaData(response?.data?.city);
+      response?.data?.list?.forEach((item: WeatherDataPointType) => {
+        const date = item.dt_txt.split(" ")[0];
+
+        if (!organizedData[date]) {
+          organizedData[date] = [];
+        }
+
+        organizedData[date].push({
+          ...item,
+        });
+      });
+
+      setWeatherData(organizedData);
+      !selectedDate && setSelectedDate(Object.keys(organizedData)[0]);
+      setMessage("");
+    } catch (error: any) {
+      console.log(error);
+      setMessage(
+        error?.response?.data?.message || "Failed to retrieve weather data"
+      );
+      setCity("");
     } finally {
       setIsLoading(false);
     }
@@ -178,7 +229,22 @@ const Weather = () => {
           </p>
         }
         {message && <p className="weather__message">{message}</p>}
-
+        <div className="weather__city-input-container">
+          <label htmlFor="city" className="form__label">
+            City
+          </label>
+          <input
+            type="text"
+            id="city"
+            className="form__input"
+            value={city}
+            placeholder="Islamabad"
+            onChange={(e) => setCity(e.target.value)}
+          />
+          <button className="weather__button" onClick={handleFetchCityWeather}>
+            Get weather
+          </button>
+        </div>
         {cityMetaData && (
           <p className="weather__city">{`${cityMetaData?.name}, ${cityMetaData?.country} `}</p>
         )}
@@ -229,7 +295,7 @@ const Weather = () => {
         <p className="weather__user-preferences">
           {userPreferredUnit
             ? `Your units preferences are set as ${userPreferredUnit}`
-            : "You do not have any preferences saved"}
+            : "You do not have any unit preferences saved"}
         </p>
         {
           <Navigation
